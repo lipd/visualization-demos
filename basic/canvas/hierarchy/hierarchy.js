@@ -21,6 +21,41 @@ function draw(ctx, node, {fillStyle = 'rgba(0, 0, 0, 0.2)', textColor = 'white'}
   }
 }
 
+function changeCircle (ctx, node) {
+  ctx.fillStyle = 'yellow'
+  ctx.font = '1.5rem Arial black'
+  ctx.textAlign = 'center'
+  ctx.beginPath()
+  ctx.arc(node.x, node.y, node.r, 0, TAU)
+  ctx.fill()
+  ctx.fillStyle = 'black'
+  ctx.fillText(node.data.name, node.x, node.y)
+}
+
+function isInCircle(mx, my, x, y, r) {
+  return (mx - x) ** 2 + (my - y) ** 2 <= r ** 2
+}
+
+function changeColor (ctx, node, mx, my) {
+  if (isInCircle(mx, my, node.x, node.y, node.r)) {
+
+    if (node.children) {
+      let isFound = false
+      for (let i = 0; i < node.children.length; i++) {
+        if (!isFound) {
+          isFound = changeColor(ctx, node.children[i], mx, my)
+        } else {
+          return true
+        }
+      }
+    } else {
+      changeCircle(ctx, node)
+      return true
+    }
+
+  }
+}
+
 (async function () {
   const canvas = document.querySelector('canvas')
   const ctx = canvas.getContext('2d')
@@ -38,5 +73,11 @@ function draw(ctx, node, {fillStyle = 'rgba(0, 0, 0, 0.2)', textColor = 'white'}
 
   const root = pack(regions)
   draw(ctx, root)
+
+  canvas.addEventListener('mousemove', (e) => {
+    const x = e.clientX * 4
+    const y = e.clientY * 4
+    changeColor(ctx, root, x, y)
+  })
 
 }());
